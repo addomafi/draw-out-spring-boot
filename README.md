@@ -1,5 +1,9 @@
 # draw-out-spring-boot
 
+Drawout for Spring Boot is a tool to get metrics from your project based on Spring Boot framework.
+
+This tool makes use of AspectJ to inject code for metrics accountability.
+
 ### How to use
 
 You just need to refer to this project as your parent artifact inside your main project file (pom.xml)
