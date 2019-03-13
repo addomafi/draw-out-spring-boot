@@ -82,7 +82,7 @@ public class HttpRequest {
 
 	public void addQueryParameter(String key, String value) {
 		if (this.queryParameters == null)
-			this.queryParameters = new HashMap<String, String>();
+			this.queryParameters = new HashMap<>();
 		this.queryParameters.put(key, value);
 	}
 
@@ -102,7 +102,7 @@ public class HttpRequest {
 
 	public void addAttributes(String key, String value) {
 		if (this.attributes == null)
-			this.attributes = new HashMap<String, String>();
+			this.attributes = new HashMap<>();
 		this.attributes.put(key, value);
 	}
 
@@ -112,7 +112,7 @@ public class HttpRequest {
 
 	public void addCookie(String key, String value) {
 		if (this.cookies == null)
-			this.cookies = new LinkedHashMap<String, String>();
+			this.cookies = new LinkedHashMap<>();
 		this.cookies.put(key, value);
 	}
 

@@ -30,7 +30,7 @@ public class HttpResponse {
 
 	public void addHeader(String key, String value) {
 		if (this.headers == null)
-			this.headers = new HashMap<String, String>();
+			this.headers = new HashMap<>();
 		this.headers.put(key, value);
 	}
 	

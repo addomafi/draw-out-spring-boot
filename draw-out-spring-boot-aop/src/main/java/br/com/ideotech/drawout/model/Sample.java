@@ -43,12 +43,22 @@ public class Sample {
 		}
 		Sample otherSample = (Sample) other;
 		Boolean isEqual = Boolean.TRUE;
-		if ((this.id != null  && otherSample.text != null)) {
+		if ((this.id != null && otherSample.text != null)) {
 			isEqual = this.id.equals(otherSample.id);
 		}
 		if (isEqual && (this.text != null && otherSample.text != null)) {
 			isEqual = this.text.equals(otherSample.text);
 		}
 		return isEqual;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 17;
+		if (this.id != null)
+			result += this.id.hashCode();
+		if (this.text != null)
+			result += this.text.hashCode();
+		return result;
 	}
 }

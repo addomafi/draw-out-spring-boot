@@ -29,8 +29,44 @@ import br.com.ideotech.drawout.model.HttpRequest;
 import br.com.ideotech.drawout.model.HttpResponse;
 
 public class HttpUtils {
-	
+
 	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HttpUtils.class);
+
+	private HttpUtils() {
+		throw new IllegalStateException("Utility class");
+	}
+
+	private static void dumpHttpQueryParams(HttpRequest request, HttpServletRequest httpServletRequest) {
+		String[] params = httpServletRequest.getQueryString().split("&");
+		for (String param : params) {
+			String[] kv = param.split("\\=");
+			request.addQueryParameter(kv[0], kv[1]);
+		}
+	}
+
+	private static void dumpCookies(HttpRequest request, HttpServletRequest httpServletRequest) {
+		for (Cookie cookie : httpServletRequest.getCookies()) {
+			request.addCookie(cookie.getName(), cookie.getValue());
+		}
+	}
+
+	private static void dumpAttributes(HttpRequest request, HttpServletRequest httpServletRequest) {
+		Enumeration<String> attributeNameEnum = httpServletRequest.getAttributeNames();
+		while (attributeNameEnum.hasMoreElements()) {
+			String attributeName = attributeNameEnum.nextElement();
+			if (attributeName != null && attributeName.indexOf("org.springframework") < 0) {
+				request.addAttributes(attributeName, String.valueOf(httpServletRequest.getAttribute(attributeName)));
+			}
+		}
+	}
+	
+	private static void dumpHeaderParams(HttpRequest request, HttpServletRequest httpServletRequest) {
+		Enumeration<String> headerNameEnum = httpServletRequest.getHeaderNames();
+		while (headerNameEnum.hasMoreElements()) {
+			String headerName = headerNameEnum.nextElement();
+			request.addHeader(headerName.toLowerCase(), httpServletRequest.getHeader(headerName));
+		}
+	}
 
 	public static HttpRequest dumpRequestInfo(HttpServletRequest httpServletRequest) {
 		HttpRequest request = new HttpRequest();
@@ -40,38 +76,21 @@ public class HttpUtils {
 		request.setHost(httpServletRequest.getServerName());
 		request.setPort(httpServletRequest.getServerPort());
 		request.setUri(httpServletRequest.getRequestURI());
-		
 		// If has query parameters
 		if (httpServletRequest.getQueryString() != null) {
-			String[] params = httpServletRequest.getQueryString().split("&");
-			for (String param : params) {
-				String[] kv = param.split("\\=");
-				request.addQueryParameter(kv[0], kv[1]);
-			}
+			dumpHttpQueryParams(request, httpServletRequest);
 		}
-
+		// If has cookies
 		if (httpServletRequest.getCookies() != null) {
-			for (Cookie cookie : httpServletRequest.getCookies()) {
-				request.addCookie(cookie.getName(), cookie.getValue());
-			}
+			dumpCookies(request, httpServletRequest);
 		}
-		
+		// If has request attributes
 		if (httpServletRequest.getAttributeNames() != null) {
-			Enumeration<String> attributeNameEnum = httpServletRequest.getAttributeNames();
-			while (attributeNameEnum.hasMoreElements()) {
-				String attributeName = attributeNameEnum.nextElement();
-				if (attributeName != null && attributeName.indexOf("org.springframework") < 0) {
-					request.addAttributes(attributeName, String.valueOf(httpServletRequest.getAttribute(attributeName)));
-				}
-			}
+			dumpAttributes(request, httpServletRequest);
 		}
-		
+		// If has headers parameters
 		if (httpServletRequest.getHeaderNames() != null) {
-			Enumeration<String> headerNameEnum = httpServletRequest.getHeaderNames();
-			while (headerNameEnum.hasMoreElements()) {
-				String headerName = headerNameEnum.nextElement();
-				request.addHeader(headerName.toLowerCase(), httpServletRequest.getHeader(headerName));
-			}
+			dumpHeaderParams(request, httpServletRequest);
 		}
 		return request;
 	}
