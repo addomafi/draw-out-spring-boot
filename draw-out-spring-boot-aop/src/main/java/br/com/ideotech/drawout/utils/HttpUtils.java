@@ -31,6 +31,12 @@ import br.com.ideotech.drawout.model.HttpResponse;
 public class HttpUtils {
 
 	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HttpUtils.class);
+	private static final Boolean DUMP_SENSITIVE_DATA = Boolean.TRUE.toString()
+			.equals(PropertiesUtil.getInstance().getValue("drawout.dump.request.sensitive-data"));
+	private static final Boolean DUMP_REQUEST_PAYLOAD = Boolean.TRUE.toString()
+			.equals(PropertiesUtil.getInstance().getValue("drawout.dump.request.payload"));
+	private static final Boolean DUMP_RESPONSE_PAYLOAD = Boolean.TRUE.toString()
+			.equals(PropertiesUtil.getInstance().getValue("drawout.dump.response.payload"));
 
 	private HttpUtils() {
 		throw new IllegalStateException("Utility class");
@@ -77,8 +83,7 @@ public class HttpUtils {
 		request.setPort(httpServletRequest.getServerPort());
 		request.setUri(httpServletRequest.getRequestURI());
 
-		if (Boolean.TRUE.toString()
-				.equals(PropertiesUtil.getInstance().getValue("drawout.dump.request.sensitive-data"))) {
+		if (DUMP_SENSITIVE_DATA) {
 			// If has query parameters
 			if (httpServletRequest.getQueryString() != null) {
 				dumpHttpQueryParams(request, httpServletRequest);
@@ -123,15 +128,13 @@ public class HttpUtils {
 	}
 	
 	public static void dumpRequestPayload(HttpRequest request, Object payload) {
-		if (Boolean.TRUE.toString()
-				.equals(PropertiesUtil.getInstance().getValue("drawout.dump.request.payload"))) {
+		if (DUMP_REQUEST_PAYLOAD) {
 			request.setPayload(dumpPayload(payload));
 		}
 	}
 	
 	public static void dumpResponsePayload(HttpResponse response, Object payload) {
-		if (Boolean.TRUE.toString()
-				.equals(PropertiesUtil.getInstance().getValue("drawout.dump.response.payload"))) {
+		if (DUMP_RESPONSE_PAYLOAD) {
 			response.setPayload(dumpPayload(payload));
 		}
 	}
