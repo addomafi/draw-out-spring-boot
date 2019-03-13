@@ -1,3 +1,18 @@
+/**
+ * Copyright 2019 Adauto Martins <adauto.martin@ideotech.com.br>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package br.com.ideotech.drawout.aspects;
 
 import java.util.LinkedList;
@@ -33,11 +48,17 @@ public aspect DrawOutMetricsAspect {
 	
 	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DrawOutMetricsAspect.class);
 
-	private static final String FLOW_ID = "br.com.ideotech.drawout.flowid";
+	private static final String FLOW_ID = "_drout";
 
 	ThreadLocal<LinkedList<Metric>> local = ThreadLocal.withInitial(() -> new LinkedList<Metric>());
 	ThreadLocal<KinesisRecordAggregation> recAgg = ThreadLocal.withInitial(() -> new KinesisRecordAggregation());
 
+	/**
+	 * A pointcut to intercept the HTTP request at first into Spring Web framework, it enable us to getting some data from HTTP Requests
+	 * 
+	 * @param joinPoint 
+	 * @throws Exception
+	 */
 	@Before("execution(* org.springframework.web.servlet.DispatcherServlet.doService(..))")
 	public void beforeDoService(ProceedingJoinPoint joinPoint) throws Exception {
 		Metric metric = allocateMetric();
