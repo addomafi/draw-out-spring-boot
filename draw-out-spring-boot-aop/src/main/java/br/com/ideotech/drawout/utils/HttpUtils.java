@@ -59,7 +59,7 @@ public class HttpUtils {
 			}
 		}
 	}
-	
+
 	private static void dumpHeaderParams(HttpRequest request, HttpServletRequest httpServletRequest) {
 		Enumeration<String> headerNameEnum = httpServletRequest.getHeaderNames();
 		while (headerNameEnum.hasMoreElements()) {
@@ -76,21 +76,25 @@ public class HttpUtils {
 		request.setHost(httpServletRequest.getServerName());
 		request.setPort(httpServletRequest.getServerPort());
 		request.setUri(httpServletRequest.getRequestURI());
-		// If has query parameters
-		if (httpServletRequest.getQueryString() != null) {
-			dumpHttpQueryParams(request, httpServletRequest);
-		}
-		// If has cookies
-		if (httpServletRequest.getCookies() != null) {
-			dumpCookies(request, httpServletRequest);
-		}
-		// If has request attributes
-		if (httpServletRequest.getAttributeNames() != null) {
-			dumpAttributes(request, httpServletRequest);
-		}
-		// If has headers parameters
-		if (httpServletRequest.getHeaderNames() != null) {
-			dumpHeaderParams(request, httpServletRequest);
+
+		if (Boolean.TRUE.toString()
+				.equals(PropertiesUtil.getInstance().getValue("drawout.dump.request.sensitive-data"))) {
+			// If has query parameters
+			if (httpServletRequest.getQueryString() != null) {
+				dumpHttpQueryParams(request, httpServletRequest);
+			}
+			// If has cookies
+			if (httpServletRequest.getCookies() != null) {
+				dumpCookies(request, httpServletRequest);
+			}
+			// If has request attributes
+			if (httpServletRequest.getAttributeNames() != null) {
+				dumpAttributes(request, httpServletRequest);
+			}
+			// If has headers parameters
+			if (httpServletRequest.getHeaderNames() != null) {
+				dumpHeaderParams(request, httpServletRequest);
+			}
 		}
 		return request;
 	}
@@ -108,7 +112,7 @@ public class HttpUtils {
 		return response;
 	}
 
-	public static String stringify(Object value) {
+	private static String dumpPayload(Object value) {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			return new String(mapper.writeValueAsBytes(value));
@@ -116,6 +120,20 @@ public class HttpUtils {
 			LOGGER.warn("An error occurred to convert Java object to JSON.", jpe);
 		}
 		return String.valueOf(value);
+	}
+	
+	public static void dumpRequestPayload(HttpRequest request, Object payload) {
+		if (Boolean.TRUE.toString()
+				.equals(PropertiesUtil.getInstance().getValue("drawout.dump.request.payload"))) {
+			request.setPayload(dumpPayload(payload));
+		}
+	}
+	
+	public static void dumpResponsePayload(HttpResponse response, Object payload) {
+		if (Boolean.TRUE.toString()
+				.equals(PropertiesUtil.getInstance().getValue("drawout.dump.response.payload"))) {
+			response.setPayload(dumpPayload(payload));
+		}
 	}
 
 }

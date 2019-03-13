@@ -45,7 +45,7 @@ import br.com.ideotech.drawout.utils.ReflectionUtils;
  * @author Adauto Martins <adauto.martins@ideotech.com.br>
  */
 public aspect DrawOutMetricsAspect {
-	
+
 	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DrawOutMetricsAspect.class);
 
 	private static final String FLOW_ID = "_drout";
@@ -54,15 +54,16 @@ public aspect DrawOutMetricsAspect {
 	ThreadLocal<KinesisRecordAggregation> recAgg = ThreadLocal.withInitial(() -> new KinesisRecordAggregation());
 
 	/**
-	 * A pointcut to intercept the HTTP request at first into Spring Web framework, it enable us to getting some data from HTTP Requests
+	 * A pointcut to intercept the HTTP request at first into Spring Web
+	 * framework, it enable us to getting some data from HTTP Requests
 	 * 
-	 * @param joinPoint 
+	 * @param joinPoint
 	 * @throws Exception
 	 */
 	@Before("execution(* org.springframework.web.servlet.DispatcherServlet.doService(..))")
 	public void beforeDoService(ProceedingJoinPoint joinPoint) throws Exception {
 		Metric metric = allocateMetric();
-		
+
 		HttpServletRequest request = null;
 		if (joinPoint.getArgs() != null && joinPoint.getArgs().length > 0) {
 			request = (HttpServletRequest) joinPoint.getArgs()[0];
@@ -76,8 +77,9 @@ public aspect DrawOutMetricsAspect {
 			metric.setRequest(requestPayload);
 			request.setAttribute(FLOW_ID, metric.getFlowId());
 		}
-		
-		LOGGER.info("Allocating a new metric, with uuid: {} and deepLevel: {}", metric.getFlowId(), metric.getDeepLevel());
+
+		LOGGER.info("Allocating a new metric, with uuid: {} and deepLevel: {}", metric.getFlowId(),
+				metric.getDeepLevel());
 	}
 
 	@After("execution(* org.springframework.web.servlet.DispatcherServlet.doService(..))")
@@ -98,9 +100,8 @@ public aspect DrawOutMetricsAspect {
 		Metric metric = getCurrentMetric();
 		// try {
 		if (joinPoint.getArgs() != null && joinPoint.getArgs().length > 0) {
-			metric.getRequest()
-					.setPayload(HttpUtils.stringify(ReflectionUtils.getParameterByAnnotationClass(joinPoint.getArgs(),
-							((MethodSignature) joinPoint.getSignature()).getMethod(), RequestBody.class)));
+			HttpUtils.dumpRequestPayload(metric.getRequest(), ReflectionUtils.getParameterByAnnotationClass(
+					joinPoint.getArgs(), ((MethodSignature) joinPoint.getSignature()).getMethod(), RequestBody.class));
 		}
 		metric.setComponent(joinPoint.getSignature().toString());
 	}
@@ -126,7 +127,7 @@ public aspect DrawOutMetricsAspect {
 		if (metric.getResponse() == null) {
 			metric.setResponse(new HttpResponse());
 		}
-		metric.getResponse().setPayload(HttpUtils.stringify(retValue));
+		HttpUtils.dumpResponsePayload(metric.getResponse(), retValue);
 	}
 
 	@AfterThrowing(pointcut = "@annotation(org.springframework.web.bind.annotation.RequestMapping) && execution(* *(..))", throwing = "exception")
@@ -160,7 +161,8 @@ public aspect DrawOutMetricsAspect {
 			Metric metric = local.get().removeLast();
 			metric.stopCounting();
 			recAgg.get().addRecord(metric);
-			LOGGER.info("Deallocating metric, with uuid: {} and deepLevel: {}", metric.getFlowId(), metric.getDeepLevel());
+			LOGGER.info("Deallocating metric, with uuid: {} and deepLevel: {}", metric.getFlowId(),
+					metric.getDeepLevel());
 		}
 
 		if (local.get().isEmpty()) {
