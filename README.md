@@ -45,3 +45,13 @@ Bellow are an example to follow if you need to excludes some dependencies:
 	</executions>
 </plugin>
 ```
+
+#### Properties
+
+There are some properties to be configured:
+
+- **drawout.kinesis.stream:** The name of kinesis stream
+- **drawout.kinesis.partition.name:** *(optional)* The partition name for Kinesis records, it will be prefixed by `drawout` string. So if it wasn't defined the partition name will contains only `drawout` string
+- **drawout.dump.request.sensitive-data:** *(defaults=false)* If true will dump information about query parameters, headers, cookies and request attributes
+- **drawout.dump.request.payload:** *(defaults=false)* If true will dump the request body payload
+- **drawout.dump.response.payload:** *(defaults=false)* If true will dump the response body payload
