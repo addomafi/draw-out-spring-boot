@@ -106,17 +106,18 @@ public aspect DrawOutMetricsAspect {
 		metric.setComponent(joinPoint.getSignature().toString());
 	}
 
-	@Before("execution(* javax.ws.rs.client.SyncInvoker.post(..))")
+	@Before("execution(* javax.ws.rs.client.SyncInvoker.post(..)) || execution(* javax.ws.rs.client.SyncInvoker.get(..)) || execution(* javax.ws.rs.client.SyncInvoker.put(..)) || execution(* javax.ws.rs.client.SyncInvoker.delete(..))")
 	public void beforeRsPost(ProceedingJoinPoint joinPoint) {
 		Metric current = getCurrentMetric();
 		Metric metric = allocateMetric();
 		metric.setFlowId(current.getFlowId());
+		metric.setComponent(joinPoint.getSignature().toString());
 
 		Builder builder = (Builder) joinPoint.getTarget();
 		builder.header(FLOW_ID, current.getFlowId());
 	}
 
-	@After("execution(* javax.ws.rs.client.SyncInvoker.post(..))")
+	@After("execution(* javax.ws.rs.client.SyncInvoker.post(..)) || execution(* javax.ws.rs.client.SyncInvoker.get(..)) || execution(* javax.ws.rs.client.SyncInvoker.put(..)) || execution(* javax.ws.rs.client.SyncInvoker.delete(..))")
 	public void afterRsPost(ProceedingJoinPoint joinPoint) {
 		deallocateMetric();
 	}

@@ -82,4 +82,8 @@ public class Metric {
 		this.response = response;
 	}
 
+	public Long getStartTime() {
+		return startTime;
+	}
+
 }
