@@ -8,9 +8,6 @@
 	</parent>
 	<artifactId>draw-out-spring-boot-lib</artifactId>
 	<packaging>pom</packaging>
-	<properties>
-		<spring.boot.aop.version>2.0.4.RELEASE</spring.boot.aop.version>
-	</properties>
 	<!-- +========================================= -->
 	<!-- | Dependency (management) settings -->
 	<!-- +========================================= -->
@@ -19,7 +16,7 @@
 			<dependency>
 				<groupId>br.com.ideotech</groupId>
 				<artifactId>draw-out-spring-boot-aop</artifactId>
-				<version>${spring.boot.aop.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -97,7 +94,7 @@
 					<dependency>
 						<groupId>br.com.ideotech</groupId>
 						<artifactId>draw-out-spring-boot-aop</artifactId>
-						<version>${spring.boot.aop.version}</version>
+						<version>${project.version}</version>
 					</dependency>
 				</dependencies>
 			</plugin>

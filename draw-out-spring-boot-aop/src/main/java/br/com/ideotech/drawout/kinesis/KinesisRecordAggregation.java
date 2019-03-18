@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Adauto Martins <adauto.martin@ideotech.com.br>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,18 +31,18 @@ import software.amazon.awssdk.services.kinesis.model.PutRecordResponse;
 
 /**
  * A helper class to aggregate and flush records to a Kinesis Stream.
- * <p/>
- * Details are covered on {@see <a href="https://github.com/awslabs/kinesis-aggregation">AWS Lambda KPL</a>}
  * 
- * @author Adauto Martins <adauto.martins@ideotech.com.br>
+ * Details are covered on {<a href="https://github.com/awslabs/kinesis-aggregation">AWS Lambda KPL</a>}
+ *
+ * @author Adauto Martins adauto.martins@ideotech.com.br
  */
 public class KinesisRecordAggregation {
-	
+
 	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(KinesisRecordAggregation.class);
 
 	private static final String KINESIS_STREAM = PropertiesUtil.getInstance().getValue("drawout.kinesis.stream");
 	private static final String KINESIS_PARTITION_NAME = PropertiesUtil.getInstance().getValue("drawout.kinesis.partition.name");
-	
+
 	private final RecordAggregator recordAgg;
 	private final KinesisAsyncClient kinesisClient;
 	private PutRecordRequest.Builder kinesisRecordBuilder;
@@ -70,7 +70,7 @@ public class KinesisRecordAggregation {
 
 	/**
 	 * Put record into Kinesis Stream
-	 * 
+	 *
 	 * @param aggRecord An aggregated KPL record
 	 */
 	private void putRecord(AggRecord aggRecord) {
@@ -79,7 +79,7 @@ public class KinesisRecordAggregation {
 		} else {
 			PutRecordRequest putRecordRequest = kinesisRecordBuilder
 					.data(SdkBytes.fromByteArray(aggRecord.toRecordBytes())).build();
-			// Updates 
+			// Updates
 			PutRecordResponse putRecordResponse;
 			try {
 				putRecordResponse = kinesisClient.putRecord(putRecordRequest).get();
@@ -93,8 +93,8 @@ public class KinesisRecordAggregation {
 
 	/**
 	 * Adds a single data into a record aggregator (KPL)
-	 * 
-	 * @param value
+	 *
+	 * @param value Return value
 	 */
 	public void addRecord(Object value) {
 		ObjectMapper mapper = new ObjectMapper();

@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Adauto Martins <adauto.martin@ideotech.com.br>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,8 +41,8 @@ import br.com.ideotech.drawout.utils.ReflectionUtils;
 
 /**
  * Aspect that covers all required pointcuts to extract metrics.
- * 
- * @author Adauto Martins <adauto.martins@ideotech.com.br>
+ *
+ * @author Adauto Martins adauto.martins@ideotech.com.br
  */
 public aspect DrawOutMetricsAspect {
 
@@ -56,7 +56,7 @@ public aspect DrawOutMetricsAspect {
 	/**
 	 * A pointcut to intercept the HTTP request at first into Spring Web
 	 * framework, it enable us to getting some data from HTTP Requests
-	 * 
+	 *
 	 * @param joinPoint
 	 * @throws Exception
 	 */
