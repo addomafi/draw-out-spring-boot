@@ -67,4 +67,16 @@ public class PropertiesUtil {
 	public String getValue(String key) {
 		return config.getString(key);
 	}
+	
+	public Long getValueAsLong(String key) {
+		return config.getLong(key);
+	}
+	
+	public Long getValueAsLong(String key, Long defaultValue) {
+		if (config.containsKey(key)) {
+			return config.getLong(key);
+		} else {
+			return defaultValue;
+		}
+	}
 }

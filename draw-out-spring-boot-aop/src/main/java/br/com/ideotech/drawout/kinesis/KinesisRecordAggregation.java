@@ -15,7 +15,11 @@
  */
 package br.com.ideotech.drawout.kinesis;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.amazonaws.kinesis.agg.AggRecord;
 import com.amazonaws.kinesis.agg.RecordAggregator;
@@ -31,7 +35,7 @@ import software.amazon.awssdk.services.kinesis.model.PutRecordResponse;
 
 /**
  * A helper class to aggregate and flush records to a Kinesis Stream.
- * 
+ *
  * Details are covered on {<a href="https://github.com/awslabs/kinesis-aggregation">AWS Lambda KPL</a>}
  *
  * @author Adauto Martins adauto.martins@ideotech.com.br
@@ -40,12 +44,23 @@ public class KinesisRecordAggregation {
 
 	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(KinesisRecordAggregation.class);
 
+
+	private static final KinesisAsyncClient KINESIS_CLIENT = KinesisAsyncClient.builder()
+			.httpClientBuilder(
+					NettyNioAsyncHttpClient.builder().maxConcurrency(100).maxPendingConnectionAcquires(10_000))
+			.build();
+	
 	private static final String KINESIS_STREAM = PropertiesUtil.getInstance().getValue("drawout.kinesis.stream");
 	private static final String KINESIS_PARTITION_NAME = PropertiesUtil.getInstance().getValue("drawout.kinesis.partition.name");
+	private static final Long KINESIS_TIMEOUT_FOR_RESPONSE = PropertiesUtil.getInstance().getValueAsLong("drawout.kinesis.timeout.for.response", 100l);
+	private static final Long KINESIS_MAX_DELAY = PropertiesUtil.getInstance().getValueAsLong("drawout.kinesis.max.delay", 10000l);
+	private static final Long KINESIS_MAX_BYTES_PER_RECORD = PropertiesUtil.getInstance().getValueAsLong("drawout.kinesis.max.bytes.per.record", 25000l);
 
 	private final RecordAggregator recordAgg;
-	private final KinesisAsyncClient kinesisClient;
+	
 	private PutRecordRequest.Builder kinesisRecordBuilder;
+	 private Timer timer;
+	private Long lastFlushTime = 0l;
 
 	public KinesisRecordAggregation() {
 		super();
@@ -61,11 +76,16 @@ public class KinesisRecordAggregation {
 			partitionName += "-" + KINESIS_PARTITION_NAME;
 		// Kinesis record builder, should be an instance per thread
 		kinesisRecordBuilder = PutRecordRequest.builder().streamName(KINESIS_STREAM).partitionKey(partitionName);
-		// Kinesis async client, should be an instance per thread
-		kinesisClient = KinesisAsyncClient.builder()
-				.httpClientBuilder(
-						NettyNioAsyncHttpClient.builder().maxConcurrency(100).maxPendingConnectionAcquires(10_000))
-				.build();
+		
+
+	     timer = new Timer("Timer");
+	     timer.scheduleAtFixedRate(new TimerTask() {
+	         public void run() {
+	         	if (System.currentTimeMillis() - lastFlushTime > KINESIS_MAX_DELAY)  {
+	         		clearAndFlush();
+	         	}
+	         }
+	     }, KINESIS_MAX_DELAY, KINESIS_MAX_DELAY);
 	}
 
 	/**
@@ -79,14 +99,17 @@ public class KinesisRecordAggregation {
 		} else {
 			PutRecordRequest putRecordRequest = kinesisRecordBuilder
 					.data(SdkBytes.fromByteArray(aggRecord.toRecordBytes())).build();
+			LOGGER.info("Flushing data to Kinesis Stream, total of bytes: {}", aggRecord.getSizeBytes());
 			// Updates
 			PutRecordResponse putRecordResponse;
 			try {
-				putRecordResponse = kinesisClient.putRecord(putRecordRequest).get();
+				putRecordResponse = KINESIS_CLIENT.putRecord(putRecordRequest).get(KINESIS_TIMEOUT_FOR_RESPONSE, TimeUnit.MILLISECONDS);
 				// Updates record builder to keep records ordered on stream
 				kinesisRecordBuilder = kinesisRecordBuilder.sequenceNumberForOrdering(putRecordResponse.sequenceNumber());
 			} catch (InterruptedException | ExecutionException e) {
 				LOGGER.warn("Getting error to send records to kinesis.", e);
+			} catch (TimeoutException e) {
+				LOGGER.info("Timeout to retrieve putRecord reponse from Kinesis, it's just informative not a problem.");
 			}
 		}
 	}
@@ -99,6 +122,9 @@ public class KinesisRecordAggregation {
 	public void addRecord(Object value) {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
+			if (recordAgg.getSizeBytes() > KINESIS_MAX_BYTES_PER_RECORD)  {
+				clearAndFlush();
+			}
 			recordAgg.addUserRecord("metric", mapper.writeValueAsBytes(value));
 		} catch (JsonProcessingException jpe) {
 			LOGGER.warn("Error to convert Java object to JSON.", jpe);
@@ -110,7 +136,11 @@ public class KinesisRecordAggregation {
 	/**
 	 * Clear the record aggregator and flush data to Kinesis Stream
 	 */
-	public void clearAndFlush() {
-		putRecord(recordAgg.clearAndGet());
+	private void clearAndFlush() {
+		 lastFlushTime = System.currentTimeMillis();
+		if (recordAgg.getNumUserRecords() > 0) {
+			putRecord(recordAgg.clearAndGet());
+		}
 	}
+
 }

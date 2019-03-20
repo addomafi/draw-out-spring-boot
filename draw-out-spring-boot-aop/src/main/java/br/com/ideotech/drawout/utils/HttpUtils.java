@@ -103,9 +103,14 @@ public class HttpUtils {
 		}
 		return request;
 	}
-
+	
 	public static HttpResponse dumpResponseInfo(HttpServletResponse httpServletResponse) {
 		HttpResponse response = new HttpResponse();
+		dumpResponseInfo(response, httpServletResponse);
+		return response;
+	}
+
+	public static void dumpResponseInfo(HttpResponse response, HttpServletResponse httpServletResponse) {
 		if (httpServletResponse.getHeaderNames() != null) {
 			Iterator<String> headerNameEnum = httpServletResponse.getHeaderNames().iterator();
 			while (headerNameEnum.hasNext()) {
@@ -114,7 +119,6 @@ public class HttpUtils {
 			}
 			response.setStatus(httpServletResponse.getStatus());
 		}
-		return response;
 	}
 
 	private static String dumpPayload(Object value) {
@@ -136,6 +140,55 @@ public class HttpUtils {
 	public static void dumpResponsePayload(HttpResponse response, Object payload) {
 		if (DUMP_RESPONSE_PAYLOAD) {
 			response.setPayload(dumpPayload(payload));
+		}
+	}
+	
+	public static HttpRequest dumpRequestInfo(org.glassfish.jersey.client.ClientRequest clientRequest) {
+		HttpRequest request = new HttpRequest();
+		request.setScheme(clientRequest.getUri().getScheme());
+		request.setMethod(clientRequest.getMethod());
+		request.setHost(clientRequest.getUri().getHost());
+		request.setPort(clientRequest.getUri().getPort());
+		request.setUri(clientRequest.getUri().getPath());
+
+		if (DUMP_SENSITIVE_DATA) {
+			// If has query parameters
+			if (clientRequest.getUri().getQuery() != null) {
+				dumpHttpQueryParams(request, clientRequest);
+			}
+			// If has cookies
+			if (clientRequest.getCookies() != null) {
+				dumpCookies(request, clientRequest);
+			}
+			// If has headers parameters
+			if (clientRequest.getHeaders() != null) {
+				dumpHeaderParams(request, clientRequest);
+			}
+		}
+		return request;
+	}
+	
+	private static void dumpHttpQueryParams(HttpRequest request, org.glassfish.jersey.client.ClientRequest clientRequest) {
+		String[] params = clientRequest.getUri().getQuery().split("&");
+		for (String param : params) {
+			String[] kv = param.split("\\=");
+			request.addQueryParameter(kv[0], kv[1]);
+		}
+	}
+
+	private static void dumpCookies(HttpRequest request, org.glassfish.jersey.client.ClientRequest clientRequest) {
+		Iterator<String> cookies = clientRequest.getCookies().keySet().iterator();
+		while (cookies.hasNext()) {
+			javax.ws.rs.core.Cookie cookie = clientRequest.getCookies().get(cookies.next());
+			request.addCookie(cookie.getName(), cookie.getValue());
+		}
+	}
+
+	private static void dumpHeaderParams(HttpRequest request, org.glassfish.jersey.client.ClientRequest clientRequest) {
+		Iterator<String> headers = clientRequest.getHeaders().keySet().iterator();
+		while (headers.hasNext()) {
+			String headerName = headers.next();
+			request.addHeader(headerName, clientRequest.getHeaderString(headerName));
 		}
 	}
 
