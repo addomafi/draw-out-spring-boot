@@ -69,51 +69,56 @@ public aspect DrawOutMetricsAspect extends DrawOutAbstractAspect {
 		} else {
 			MetricManager.allocateMetric();
 		}
-		
-		
 	}
 
 	@After("execution(* org.springframework.web.servlet.DispatcherServlet.doService(..))")
 	public void afterDoService(JoinPoint joinPoint) {
 		HttpServletResponse response = null;
 		Metric metric = MetricManager.getCurrentMetric();
-		if (joinPoint.getArgs() != null && joinPoint.getArgs().length > 1) {
-			response = (HttpServletResponse) joinPoint.getArgs()[1];
-			if (metric.getResponse() == null) {
-				metric.setResponse(HttpUtils.dumpResponseInfo(response));
-			} else {
-				HttpUtils.dumpResponseInfo(metric.getResponse(), response);
-			}
-		}
-		MetricManager.deallocateMetric();
+    if (metric != null) {
+  		if (joinPoint.getArgs() != null && joinPoint.getArgs().length > 1) {
+  			response = (HttpServletResponse) joinPoint.getArgs()[1];
+  			if (metric.getResponse() == null) {
+  				metric.setResponse(HttpUtils.dumpResponseInfo(response));
+  			} else {
+  				HttpUtils.dumpResponseInfo(metric.getResponse(), response);
+  			}
+  		}
+  		MetricManager.deallocateMetric();
+    }
 	}
 
 	@Before("(@annotation(org.springframework.web.bind.annotation.RequestMapping) || @annotation(org.springframework.web.bind.annotation.DeleteMapping)  || @annotation(org.springframework.web.bind.annotation.PutMapping)  || @annotation(org.springframework.web.bind.annotation.PostMapping) || @annotation(org.springframework.web.bind.annotation.GetMapping) ) && execution(* *(..))")
 	public void beforeControllerMethod(JoinPoint joinPoint) {
 		Metric metric = MetricManager.getCurrentMetric();
-		// try {
-		if (joinPoint.getArgs() != null && joinPoint.getArgs().length > 0) {
-			HttpUtils.dumpRequestPayload(metric.getRequest(), ReflectionUtils.getParameterByAnnotationClass(
-					joinPoint.getArgs(), ((MethodSignature) joinPoint.getSignature()).getMethod(), RequestBody.class));
-		}
-		metric.setComponent(joinPoint.getSignature().toString());
+		if (metric != null) {
+  		if (joinPoint.getArgs() != null && joinPoint.getArgs().length > 0) {
+  			HttpUtils.dumpRequestPayload(metric.getRequest(), ReflectionUtils.getParameterByAnnotationClass(
+  					joinPoint.getArgs(), ((MethodSignature) joinPoint.getSignature()).getMethod(), RequestBody.class));
+  		}
+  		metric.setComponent(joinPoint.getSignature().toString());
+    }
 	}
 
 	@AfterReturning(pointcut = "@annotation(org.springframework.web.bind.annotation.RequestMapping) && execution(* *(..))", returning = "retValue")
 	public void afterReturningControllerMethod(Object retValue) {
 		Metric metric = MetricManager.getCurrentMetric();
-		if (metric.getResponse() == null) {
-			metric.setResponse(new HttpResponse());
-		}
-		HttpUtils.dumpResponsePayload(metric.getResponse(), retValue);
+    if (metric != null) {
+  		if (metric.getResponse() == null) {
+  			metric.setResponse(new HttpResponse());
+  		}
+      HttpUtils.dumpResponsePayload(metric.getResponse(), retValue);
+    }
 	}
 
 	@AfterThrowing(pointcut = "@annotation(org.springframework.web.bind.annotation.RequestMapping) && execution(* *(..))", throwing = "exception")
 	public void afterThrowingControllerMethod(Throwable exception) {
 		Metric metric = MetricManager.getCurrentMetric();
-		if (metric.getResponse() == null) {
-			metric.setResponse(new HttpResponse());
-		}
-		metric.getResponse().setPayload(ExceptionUtils.getFullStackTrace(exception));
+    if (metric != null) {
+  		if (metric.getResponse() == null) {
+  			metric.setResponse(new HttpResponse());
+  		}
+      metric.getResponse().setPayload(ExceptionUtils.getFullStackTrace(exception));
+    }
 	}
 }

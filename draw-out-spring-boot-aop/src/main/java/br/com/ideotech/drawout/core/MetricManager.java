@@ -16,7 +16,7 @@ public class MetricManager {
 	public static Metric allocateMetric() {
 		return allocateMetric(null);
 	}
-	
+
 	public static Metric allocateMetric(String currentFlowId) {
 		Metric metric = new Metric();
 		try {
@@ -24,28 +24,31 @@ public class MetricManager {
 		} catch (Exception e) {
 			metric.setDeepLevel(0);
 		}
-		
+
 		if (currentFlowId == null || currentFlowId.isEmpty()) {
 			metric.setFlowId(UUID.randomUUID().toString());
 		} else {
 			metric.setFlowId(currentFlowId);
 		}
-		
+
 		LOGGER.info("Allocating a new metric, with uuid: {} and deepLevel: {}", metric.getFlowId(),
 				metric.getDeepLevel());
-		
+
 		local.get().add(metric);
 		metric.startCounting();
-		
+
 		return metric;
 	}
 
 	public static Metric getCurrentMetric() {
-		return local.get().getLast();
+		if (local.get() != null && !local.get().isEmpty()) {
+			return local.get().getLast();
+		}
+		return null;
 	}
 
 	public static void deallocateMetric() {
-		if (!local.get().isEmpty()) {
+		if (local.get() != null && !local.get().isEmpty()) {
 			Metric metric = local.get().removeLast();
 			metric.stopCounting();
 			recAgg.get().addRecord(metric);
