@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>br.com.ideotech</groupId>
 	<artifactId>draw-out-spring-boot</artifactId>
-	<version>1.5.19-3.RELEASE</version>
+	<version>1.5.19-4.RELEASE</version>
 	<packaging>pom</packaging>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
