@@ -41,13 +41,25 @@ public class HttpUtils {
 	private HttpUtils() {
 		throw new IllegalStateException("Utility class");
 	}
-
-	private static void dumpHttpQueryParams(HttpRequest request, HttpServletRequest httpServletRequest) {
-		String[] params = httpServletRequest.getQueryString().split("&");
+	
+	private static void extractQueryParams(HttpRequest request, String queryString) {
+		String[] params = queryString.split("&");
 		for (String param : params) {
 			String[] kv = param.split("\\=");
-			request.addQueryParameter(kv[0], kv[1]);
+			String key = "";
+			String value = "";
+			if (kv.length > 0) {
+				key = kv[0];
+			}
+			if (kv.length > 1) {
+				value = kv[1];
+			}
+			request.addQueryParameter(key, value);
 		}
+	}
+
+	private static void dumpHttpQueryParams(HttpRequest request, HttpServletRequest httpServletRequest) {
+		extractQueryParams(request, httpServletRequest.getQueryString());
 	}
 
 	private static void dumpCookies(HttpRequest request, HttpServletRequest httpServletRequest) {
@@ -169,11 +181,7 @@ public class HttpUtils {
 	}
 	
 	private static void dumpHttpQueryParams(HttpRequest request, org.glassfish.jersey.client.ClientRequest clientRequest) {
-		String[] params = clientRequest.getUri().getQuery().split("&");
-		for (String param : params) {
-			String[] kv = param.split("\\=");
-			request.addQueryParameter(kv[0], kv[1]);
-		}
+		extractQueryParams(request, clientRequest.getUri().getQuery());
 	}
 
 	private static void dumpCookies(HttpRequest request, org.glassfish.jersey.client.ClientRequest clientRequest) {
