@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Adauto Martins <adauto.martin@ideotech.com.br>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,12 +42,24 @@ public class HttpUtils {
 		throw new IllegalStateException("Utility class");
 	}
 
-	private static void dumpHttpQueryParams(HttpRequest request, HttpServletRequest httpServletRequest) {
-		String[] params = httpServletRequest.getQueryString().split("&");
+	private static void extractQueryParams(HttpRequest request, String queryString) {
+		String[] params = queryString.split("&");
 		for (String param : params) {
 			String[] kv = param.split("\\=");
-			request.addQueryParameter(kv[0], kv[1]);
+			String key = "";
+			String value = "";
+			if (kv.length > 0) {
+				key = kv[0];
+			}
+			if (kv.length > 1) {
+				value = kv[1];
+			}
+			request.addQueryParameter(key, value);
 		}
+	}
+
+	private static void dumpHttpQueryParams(HttpRequest request, HttpServletRequest httpServletRequest) {
+		extractQueryParams(request, httpServletRequest.getQueryString());
 	}
 
 	private static void dumpCookies(HttpRequest request, HttpServletRequest httpServletRequest) {
@@ -103,7 +115,7 @@ public class HttpUtils {
 		}
 		return request;
 	}
-	
+
 	public static HttpResponse dumpResponseInfo(HttpServletResponse httpServletResponse) {
 		HttpResponse response = new HttpResponse();
 		dumpResponseInfo(response, httpServletResponse);
@@ -130,19 +142,19 @@ public class HttpUtils {
 		}
 		return String.valueOf(value);
 	}
-	
+
 	public static void dumpRequestPayload(HttpRequest request, Object payload) {
 		if (DUMP_REQUEST_PAYLOAD) {
 			request.setPayload(dumpPayload(payload));
 		}
 	}
-	
+
 	public static void dumpResponsePayload(HttpResponse response, Object payload) {
 		if (DUMP_RESPONSE_PAYLOAD) {
 			response.setPayload(dumpPayload(payload));
 		}
 	}
-	
+
 	public static HttpRequest dumpRequestInfo(org.glassfish.jersey.client.ClientRequest clientRequest) {
 		HttpRequest request = new HttpRequest();
 		request.setScheme(clientRequest.getUri().getScheme());
@@ -167,13 +179,9 @@ public class HttpUtils {
 		}
 		return request;
 	}
-	
+
 	private static void dumpHttpQueryParams(HttpRequest request, org.glassfish.jersey.client.ClientRequest clientRequest) {
-		String[] params = clientRequest.getUri().getQuery().split("&");
-		for (String param : params) {
-			String[] kv = param.split("\\=");
-			request.addQueryParameter(kv[0], kv[1]);
-		}
+		extractQueryParams(request, clientRequest.getUri().getQuery());
 	}
 
 	private static void dumpCookies(HttpRequest request, org.glassfish.jersey.client.ClientRequest clientRequest) {

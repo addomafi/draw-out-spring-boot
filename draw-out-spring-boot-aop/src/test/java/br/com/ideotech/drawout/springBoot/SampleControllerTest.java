@@ -45,7 +45,7 @@ public class SampleControllerTest {
 	@Test
     public void testSample() {
 		assertThat("Response is equal...",
-				this.restTemplate.getForObject("http://localhost:" + port + "/sample?a=01&b=02", String.class),
+				this.restTemplate.getForObject("http://localhost:" + port + "/sample?a=01&b=", String.class),
 				equalTo("Text to test Client"));
 
 		assertThat("Response is equal...",
