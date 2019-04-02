@@ -63,18 +63,35 @@ public class PropertiesUtil {
 		}
 		return instance;
 	}
+	
+	private String getProperty(String key) {
+		String property = System.getenv(key);
+		if (property == null || property.isEmpty()) {
+			property = System.getProperty(key);
+		}
+		if (property == null || property.isEmpty()) {
+			property = config.getString(key);
+		}
+		return property;
+	}
 
 	public String getValue(String key) {
-		return config.getString(key);
+		return getProperty(key);
 	}
 	
 	public Long getValueAsLong(String key) {
-		return config.getLong(key);
+		try {
+			return Long.parseLong(getProperty(key));			
+		} catch (NumberFormatException nfe) {
+			return null;
+		}
+		
 	}
 	
 	public Long getValueAsLong(String key, Long defaultValue) {
-		if (config.containsKey(key)) {
-			return config.getLong(key);
+		Long property = getValueAsLong(key);
+		if (property != null) {
+			return property;
 		} else {
 			return defaultValue;
 		}
