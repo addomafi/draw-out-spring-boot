@@ -38,7 +38,7 @@ public class PropertiesUtil {
 				PropertiesConfiguration.class).configure(params.properties().setFileName("application.properties"));
 		try {
 			config.addConfiguration(builder.getConfiguration());
-			String activeProfile = System.getenv(PROFILE_CONFIG_KEY);
+			String activeProfile = System.getenv(PROFILE_CONFIG_ENV_KEY);
 			if (activeProfile == null || activeProfile.isEmpty()) {
 				activeProfile = System.getProperty(PROFILE_CONFIG_KEY);
 			}
