@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Adauto Martins <adauto.martin@ideotech.com.br>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,8 @@ public class PropertiesUtil {
 
 	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PropertiesUtil.class);
 	private static final String PROFILE_CONFIG_KEY = "spring.profiles.active";
-	
+	private static final String PROFILE_CONFIG_ENV_KEY = "SPRING_PROFILES_ACTIVE";
+
 	private static PropertiesUtil instance = null;
 
 	private CompositeConfiguration config = new CompositeConfiguration();
@@ -56,14 +57,14 @@ public class PropertiesUtil {
 			LOGGER.warn("Error during loading of application.properties.", cex);
 		}
 	}
-	
+
 	public static PropertiesUtil getInstance(){
 		if (instance == null){
 			instance = new PropertiesUtil();
 		}
 		return instance;
 	}
-	
+
 	private String getProperty(String key) {
 		String keyAsEnv = key.replaceAll("\\.", "_");
 		String property = System.getenv(keyAsEnv.toUpperCase());
@@ -79,16 +80,16 @@ public class PropertiesUtil {
 	public String getValue(String key) {
 		return getProperty(key);
 	}
-	
+
 	public Long getValueAsLong(String key) {
 		try {
-			return Long.parseLong(getProperty(key));			
+			return Long.parseLong(getProperty(key));
 		} catch (NumberFormatException nfe) {
 			return null;
 		}
-		
+
 	}
-	
+
 	public Long getValueAsLong(String key, Long defaultValue) {
 		Long property = getValueAsLong(key);
 		if (property != null) {
