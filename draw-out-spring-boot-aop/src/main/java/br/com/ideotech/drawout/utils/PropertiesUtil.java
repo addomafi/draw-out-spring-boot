@@ -37,7 +37,12 @@ public class PropertiesUtil {
 		FileBasedConfigurationBuilder<FileBasedConfiguration> builder = new FileBasedConfigurationBuilder<FileBasedConfiguration>(
 				PropertiesConfiguration.class).configure(params.properties().setFileName("application.properties"));
 		try {
-			config.addConfiguration(builder.getConfiguration());
+			try {
+				config.addConfiguration(builder.getConfiguration());
+			} catch (ConfigurationException cex) {
+				LOGGER.warn("Error during loading of file application.properties.");
+			}
+			
 			String activeProfile = System.getenv(PROFILE_CONFIG_ENV_KEY);
 			if (activeProfile == null || activeProfile.isEmpty()) {
 				activeProfile = System.getProperty(PROFILE_CONFIG_KEY);
@@ -54,7 +59,7 @@ public class PropertiesUtil {
 												.getConfiguration());
 			}
 		} catch (ConfigurationException cex) {
-			LOGGER.warn("Error during loading of application.properties.", cex);
+			LOGGER.warn("Error during loading of application.properties for an specific environment.");
 		}
 	}
 
