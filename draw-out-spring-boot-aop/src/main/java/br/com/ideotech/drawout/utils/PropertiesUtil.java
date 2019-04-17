@@ -71,7 +71,7 @@ public class PropertiesUtil {
 	}
 
 	private String getProperty(String key) {
-		String keyAsEnv = key.replaceAll("\\.", "_");
+		String keyAsEnv = key.replaceAll("[\\.|-]", "_");
 		String property = System.getenv(keyAsEnv.toUpperCase());
 		if (property == null || property.isEmpty()) {
 			property = System.getProperty(key);
